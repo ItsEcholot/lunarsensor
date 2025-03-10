@@ -63,12 +63,14 @@ async def events(request: Request):
     return EventSourceResponse(event_generator)
 
 
-# Do the sensor reading logic below
-
+HOME_ASSISTANT_URL = os.getenv("HOME_ASSISTANT_URL")
+TOKEN = os.getenv("TOKEN")
+SENSOR_ENTITY_ID = os.getenv("SENSOR_ENTITY_ID")
 
 async def read_lux():
-    if os.path.exists("/tmp/lux"):
-        with open("/tmp/lux") as f:
-            return float(f.read().strip() or "400.0")
+    async with CLIENT.get(f"{HOME_ASSISTANT_URL}/api/states/{SENSOR_ENTITY_ID}", headers={"Authorization": f"Bearer {TOKEN}"}) as response:
+        sensor = await response.json()
+        if not json:
+            return None
 
-    return 400.00
+        return float(sensor["state"])
